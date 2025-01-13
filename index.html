@@ -9,30 +9,26 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
     <title>AOC testing</title>
-
     <style>
       #file {
         color: transparent;
       }
-
       #drop-zone {
-        padding: 0.3rem;
-        border: solid 1px Black;
-        border-radius: 10px;
         height: 100px;
         width: 300px;
         background-color: #ecffdc;
       }
-
       .wheat {
         background-color: Wheat;
-        border: 1px solid Black;
-        border-radius: 12px;
       }
-      .input {
+      .display {
         overflow: scroll;
-        max-height: 20rem;
+        height: 20rem;
         min-width: 30rem;
       }
     </style>
@@ -42,33 +38,46 @@
     <div class="my-3 container">
       <h1>AOC test</h1>
       <div id="app">
-        <div class="mt-3">
-          <div>
-            <input id="file" type="file" accept=".txt" @change="readFile" />
-            <div class="my-3" id="drop-zone">
-              <p>Or drag file in here</p>
-              <p class="mt-2" v-html="msg"></p>
+        <div>
+          <input id="file" type="file" accept=".txt" @change="readFile" />
+          <div class="rounded my-3 border border-dark p-2" id="drop-zone">
+            <p>Or drag file in here.</p>
+            <p class="mt-2" v-html="msg"></p>
+          </div>
+        </div>
+        <div class="row g-0 gx-4">
+          <div class="col-6">
+            <div class="rounded display p-2 wheat mt-2 border border-dark">
+              <p class="mb-0" v-for="line in lines">{{line}}</p>
             </div>
           </div>
+          <div class="col-6">
+            <button
+              class="d-block btn btn-primary my-2"
+              :disabled="!lines.length"
+              type="button"
+              @click="process"
+            >
+              Process
+            </button>
+            <label for="res">Result:</label>
+            <input
+              id="input"
+              class="rounded d-block border border-dark p-2"
+              disabled
+              v-model="result"
+              :class="{'bg-success text-white': indicate}"
+            />
 
-          <div
-            v-if="lines.length"
-            class="input p-2 wheat d-inline-block mt-2 border border-dark"
-          >
-            <p class="mb-0" v-for="line in lines">{{line}}</p>
-          </div>
-          <button
-            class="d-block btn btn-primary my-2"
-            v-if="lines.length"
-            type="button"
-            @click="process"
-          >
-            Process
-          </button>
-          <div>
-            <p class="rounded d-inline-block border border-dark p-2">
-              Result: {{response}}
-            </p>
+            <button
+              title="copy value"
+              type="button"
+              class="mt-2"
+              id="copy"
+              @click="copyRes"
+            >
+              <i class="fa fa-copy"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -81,24 +90,52 @@
         data() {
           const access = 'QCpZfwnsgnQsyHHB3ID5isS43cZnthj6YoSPtemxFGtcH15I';
           return {
-            msg: '&nbsp;',
-            response: 0,
+            indicate: false,
+            left: [],
             lines: [],
+            msg: '&nbsp;',
+            result: undefined,
+            right: [],
+            rx: /(\d+)\s+(\d+)/,
           };
         },
         methods: {
           process: function () {
-            console.log('Processing');
-            this.response = 1;
+            // Clear these values
+            this.left = [];
+            this.right = [];
+            this.result = undefined;
+            // Get the numbers and put them in the arrays
+            this.lines.forEach((e) => {
+              let temp = this.rx.exec(e);
+              if (temp.length === 3) {
+                this.left.push(parseInt(temp[1]));
+                this.right.push(parseInt(temp[2]));
+              }
+            });
+            // Sort the arrays
+            this.left.sort();
+            this.right.sort();
+            // Get the sum of the differences
+            this.result = this.left.reduce((acc, e, i) => {
+              // Use absolute number so it won't matter if the larger number is in left or right
+              return acc + Math.abs(this.right[i] - e);
+            }, 0);
+          },
+          copyRes: function () {
+            navigator.clipboard.writeText(this.result);
+            this.indicate = true;
+            setTimeout(() => (this.indicate = false), 500);
           },
           readFile: function (e) {
             let file = e.target.files[0];
             this.read(file);
           },
           read: function (f) {
+            this.msg = f.name;
             const reader = new FileReader();
             reader.onload = () => {
-              this.lines = reader.result.split('\n').map((e) => (e = e.trim()));
+              this.lines = reader.result.split('\n').filter((e) => e.length);
             };
             reader.readAsText(f);
           },
