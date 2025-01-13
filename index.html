@@ -42,45 +42,47 @@
       <h1>AOC test</h1>
       <div id="app">
         <div>
-          <input id="file" type="file" accept=".txt" @change="readFile" />
-          <div class="rounded my-3 border border-dark p-2" id="drop-zone">
-            <p>Or drag file in here.</p>
-            <p class="mt-2" v-html="msg"></p>
-          </div>
-        </div>
-        <div class="row gy-3 gx-4">
-          <div class="col-md-6">
-            <div class="rounded display p-2 wheat mt-2 border border-dark">
-              <p class="mb-0" v-for="line in lines">{{line}}</p>
+          <div>
+            <input id="file" type="file" accept=".txt" @change="readFile" />
+            <div class="rounded my-3 border border-dark p-2" id="drop-zone">
+              <p>Or drag file in here.</p>
+              <p class="mt-2" v-html="msg"></p>
             </div>
           </div>
-          <div class="col-md-6">
-            <button
-              class="d-block btn btn-primary my-2"
-              :disabled="!lines.length"
-              type="button"
-              @click="process"
-            >
-              Process
-            </button>
-            <label for="res">Result:</label>
-            <input
-              id="input"
-              class="rounded d-block border border-dark p-2"
-              disabled
-              v-model="result"
-              :class="{'bg-success text-white': indicate}"
-            />
+          <div class="row gy-3 gx-4">
+            <div class="col-md-6">
+              <div class="rounded display p-2 wheat mt-2 border border-dark">
+                <p class="mb-0" v-for="line in lines">{{line}}</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <button
+                class="d-block btn btn-primary my-2"
+                :disabled="!lines.length"
+                type="button"
+                @click="process"
+              >
+                Process
+              </button>
+              <label for="res">Result:</label>
+              <input
+                id="input"
+                class="rounded d-block border border-dark p-2"
+                disabled
+                v-model="result"
+                :class="{'bg-success text-white': indicate}"
+              />
 
-            <button
-              title="copy value"
-              type="button"
-              class="mt-2"
-              id="copy"
-              @click="copyRes"
-            >
-              <i class="fa fa-copy"></i>
-            </button>
+              <button
+                title="copy value"
+                type="button"
+                class="mt-2"
+                id="copy"
+                @click="copyRes"
+              >
+                <i class="fa fa-copy"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -95,13 +97,35 @@
           return {
             indicate: false,
             lines: [],
+            left: [],
+            right: [],
             msg: '&nbsp;',
             result: undefined,
+            rx: /(\d+)\s+(\d+)/,
           };
         },
         methods: {
           process: function () {
-            this.result = 'Testing';
+            this.left = [];
+            this.right = [];
+            this.result = undefined;
+            // Get the numbers and put them in the arrays
+            this.lines.forEach((e) => {
+              let temp = this.rx.exec(e);
+              if (temp.length === 3) {
+                this.left.push(parseInt(temp[1]));
+                this.right.push(parseInt(temp[2]));
+              }
+              this.left.sort();
+              this.right.sort();
+              this.lines = this.left.reduce((acc, e, i) => {
+                acc.push(`${e}  ${this.right[i]}`);
+                return acc;
+              }, []);
+              this.result = this.left.reduce((acc, e, i) => {
+                return acc + Math.abs(this.right[i] - e);
+              }, 0);
+            });
           },
           copyRes: function () {
             navigator.clipboard.writeText(this.result);
@@ -124,7 +148,7 @@
             evt.stopPropagation();
             evt.preventDefault();
             let f = evt.dataTransfer.files[0];
-            if (f.name.slice(f.name.length - 5) !== '.txt') {
+            if (f.name.slice(f.name.length - 4) !== '.txt') {
               return;
             }
             this.read(f);
