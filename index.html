@@ -94,36 +94,14 @@
           const access = 'QCpZfwnsgnQsyHHB3ID5isS43cZnthj6YoSPtemxFGtcH15I';
           return {
             indicate: false,
-            left: [],
             lines: [],
             msg: '&nbsp;',
             result: undefined,
-            right: [],
-            rx: /(\d+)\s+(\d+)/,
           };
         },
         methods: {
           process: function () {
-            // Clear these values
-            this.left = [];
-            this.right = [];
-            this.result = undefined;
-            // Get the numbers and put them in the arrays
-            this.lines.forEach((e) => {
-              let temp = this.rx.exec(e);
-              if (temp.length === 3) {
-                this.left.push(parseInt(temp[1]));
-                this.right.push(parseInt(temp[2]));
-              }
-            });
-            // Sort the arrays
-            this.left.sort();
-            this.right.sort();
-            // Get the sum of the differences
-            this.result = this.left.reduce((acc, e, i) => {
-              // Use absolute number so it won't matter if the larger number is in left or right
-              return acc + Math.abs(this.right[i] - e);
-            }, 0);
+            this.result = 'Testing';
           },
           copyRes: function () {
             navigator.clipboard.writeText(this.result);
