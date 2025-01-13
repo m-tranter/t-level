@@ -29,7 +29,10 @@
       .display {
         overflow: scroll;
         height: 20rem;
-        min-width: 30rem;
+        min-width: 300px;
+      }
+      input {
+        field-sizing: content;
       }
     </style>
   </head>
@@ -45,13 +48,13 @@
             <p class="mt-2" v-html="msg"></p>
           </div>
         </div>
-        <div class="row g-0 gx-4">
-          <div class="col-6">
+        <div class="row gy-3 gx-4">
+          <div class="col-md-6">
             <div class="rounded display p-2 wheat mt-2 border border-dark">
               <p class="mb-0" v-for="line in lines">{{line}}</p>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-md-6">
             <button
               class="d-block btn btn-primary my-2"
               :disabled="!lines.length"

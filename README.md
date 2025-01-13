@@ -1,2 +1,2 @@
-# Simple test set-up for Advent of Code
+# Simple test set-up
 https://adventofcode.com/
