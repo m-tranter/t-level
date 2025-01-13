@@ -32,7 +32,7 @@
         min-width: 300px;
       }
       input {
-        field-sizing: content;
+        color: Black;
       }
     </style>
   </head>
@@ -97,35 +97,13 @@
           return {
             indicate: false,
             lines: [],
-            left: [],
-            right: [],
             msg: '&nbsp;',
             result: undefined,
-            rx: /(\d+)\s+(\d+)/,
           };
         },
         methods: {
           process: function () {
-            this.left = [];
-            this.right = [];
-            this.result = undefined;
-            // Get the numbers and put them in the arrays
-            this.lines.forEach((e) => {
-              let temp = this.rx.exec(e);
-              if (temp.length === 3) {
-                this.left.push(parseInt(temp[1]));
-                this.right.push(parseInt(temp[2]));
-              }
-              this.left.sort();
-              this.right.sort();
-              this.lines = this.left.reduce((acc, e, i) => {
-                acc.push(`${e}  ${this.right[i]}`);
-                return acc;
-              }, []);
-              this.result = this.left.reduce((acc, e, i) => {
-                return acc + Math.abs(this.right[i] - e);
-              }, 0);
-            });
+            this.result = 'Testing';
           },
           copyRes: function () {
             navigator.clipboard.writeText(this.result);
@@ -138,6 +116,7 @@
           },
           read: function (f) {
             this.msg = f.name;
+            this.result = undefined;
             const reader = new FileReader();
             reader.onload = () => {
               this.lines = reader.result.split('\n').filter((e) => e.length);
