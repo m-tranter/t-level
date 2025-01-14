@@ -32,6 +32,7 @@
         min-width: 300px;
       }
       input {
+        field-sizing: content;
         color: Black;
       }
     </style>
@@ -72,7 +73,6 @@
                 v-model="result"
                 :class="{'bg-success text-white': indicate}"
               />
-
               <button
                 title="copy value"
                 type="button"
@@ -116,7 +116,6 @@
           },
           read: function (f) {
             this.msg = f.name;
-            this.result = undefined;
             const reader = new FileReader();
             reader.onload = () => {
               this.lines = reader.result.split('\n').filter((e) => e.length);
