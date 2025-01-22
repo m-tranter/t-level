@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pong</title>
+    <style>
+      #screen {
+        width: 450px;
+        height: 300px;
+        margin: auto;
+        display: block;
+        position: relative;
+        background: black;
+        border: 10px solid #ffffff;
+      }
+
+      #ball {
+        width: 15px;
+        height: 15px;
+        border-radius: 7px;
+        top: 0px;
+        position: absolute;
+        background-color: white;
+      }
+
+      .goal {
+        width: 10px;
+        height: 100px;
+        background: black;
+        position: absolute;
+        top: 100px;
+      }
+
+      #p1Goal {
+        left: -10px;
+      }
+
+      #p2Goal {
+        left: 450px;
+      }
+
+      body {
+        background-color: #333333;
+      }
+
+      h1,
+      h2 {
+        font-family: sans-serif;
+        color: white;
+        font-size: 18px;
+      }
+
+      h2 {
+        display: inline;
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+
+      #outer {
+        margin: auto;
+        display: table;
+      }
+
+      .mid {
+        border-left: 3px dashed white;
+        height: 300px;
+        position: absolute;
+        top: 0px;
+        left: 224px;
+      }
+
+      .bat {
+        width: 10px;
+        height: 50px;
+        position: absolute;
+        top: 100px;
+        background: white;
+      }
+
+      #p1Bat {
+        left: 50px;
+      }
+
+      #p2Bat {
+        left: 390px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <div id="screen">
+        <span id="outer">
+          <h2 id="p1Score">0</h2>
+          <h2 id="p2Score">0</h2>
+        </span>
+        <div class="mid"></div>
+        <div class="goal" id="p1Goal"></div>
+        <div class="goal" id="p2Goal"></div>
+        <div id="ball"></div>
+        <div class="bat" id="p1Bat"></div>
+        <div class="bat" id="p2Bat"></div>
+      </div>
+      <div align="center">
+        <h1>'a' &amp; 'z' move P1 bat. '&lt;' &amp; ':' move P2 bat.</h1>
+        <button id="btn" type="button" onclick="play()">Start</button>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const batOffScreen = (b) => {
+      // Check if bat is going off screen.
+      if (b.y < 0 || b.y > scrH - b.height) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    const moveBat = (bat) => {
+      bat.y += bat.speed;
+      if (batOffScreen(bat)) {
+        bat.y -= bat.speed;
+        bat.speed = 0;
+      }
+      bat.style.top = bat.y + 'px';
+    };
+
+    const collisionCheck = (bat) => {
+      // Reverse x & y speeds of ball if it hits a bat..
+      const temp = ballHits(bat);
+      if (temp) {
+        ball.xSpd *= -1 * temp;
+        ball.ySpd *= temp;
+      }
+    };
+
+    const ballHits = (bat) => {
+      // (Very basic) collision detection function.
+
+      // Not touching a bat.
+      if (ball.yPos + ball.width < bat.y || ball.yPos > bat.y + bat.height) {
+        return 0;
+      }
+      if (ball.xPos + ball.width < bat.x || ball.xPos > bat.x + bat.width) {
+        return 0;
+      }
+
+      // Ball hits long sides of bat.
+      if (ball.xSpd === 1 && ball.xPos + ball.width === bat.x) {
+        return 1;
+      }
+      if (ball.xSpd === -1 && ball.xPos === bat.x + bat.width) {
+        return 1;
+      }
+
+      // Ball hits short sides of bat.
+      if (ball.xPos + ball.width >= bat.x && ball.xPos <= bat.x + bat.width) {
+        return -1;
+      }
+
+      return 0;
+    };
+    const setUpBat = (b, left) => {
+      const temp = document.getElementById(b);
+      temp.speed = 0;
+      temp.y = 100;
+      temp.width = 10;
+      temp.x = left;
+      temp.height = 50;
+      return temp;
+    };
+
+    const addEv = (bat, up, down) => {
+      addEventListener('keyup', function (event) {
+        if (event.keyCode === up && bat.speed) {
+          bat.speed = 0;
+        }
+      });
+      addEventListener('keydown', function (event) {
+        if (event.keyCode === up) {
+          bat.speed = -1;
+        } else if (event.keyCode === down) {
+          bat.speed = 1;
+        }
+      });
+    };
+
+    const batInt = setInterval(() => {
+      // Move the bats
+      moveBat(p1Bat);
+      moveBat(p2Bat);
+      // Check for collisions.
+      collisionCheck(p1Bat);
+      collisionCheck(p2Bat);
+    }, 0);
+
+    const reset = (x) => {
+      if (!x) {
+        ball.xPos = x;
+      } else {
+        ball.xPos = x - ball.width;
+      }
+      ball.yPos = 0;
+      ball.xSpd = 0;
+      ball.ySpd = 0;
+
+      // After short delay, get the ball moving.
+      setTimeout(function () {
+        if (x === scrW) {
+          ball.xSpd = -1;
+        } else {
+          ball.xSpd = 1;
+        }
+        ball.ySpd = 1;
+      }, 500);
+    };
+
+    const loop = () => {
+      // Main game loop.
+
+      // Move the ball.
+      ball.xPos += ball.xSpd;
+      ball.yPos += ball.ySpd;
+      ball.style.top = ball.yPos + 'px';
+      ball.style.left = ball.xPos + 'px';
+
+      // Reverse direction when on a border.
+      if (ball.xPos === scrW - ball.width || ball.xPos === 0) {
+        if (ball.yPos <= 100 || ball.yPos + ball.width >= 200) {
+          ball.xSpd *= -1;
+        }
+      }
+      if (ball.yPos === 0 || ball.yPos === scrH - ball.width) {
+        ball.ySpd *= -1;
+      }
+
+      // Check for a goal.
+      if (ball.xPos == -10 && ball.yPos + ball.width < 214 && ball.yPos > 86) {
+        p2Sc.innerHTML = Number(p2Sc.innerHTML) + 1;
+        reset(scrW);
+      }
+      if (ball.xPos === scrW && ball.yPos < 200 && ball.yPos > 100) {
+        p1Sc.innerHTML = Number(p1Sc.innerHTML) + 1;
+        reset(0);
+      }
+    };
+
+    const play = () => {
+      if (playing) {
+        clearInterval(int);
+        playing = false;
+        btn.innerHTML = 'Start';
+      } else {
+        playing = true;
+        btn.innerHTML = 'Stop';
+        p1Sc.innerHTML = 0;
+        p2Sc.innerHTML = 0;
+        ball.xPos = 0;
+        ball.yPos = 0;
+        ball.xSpd = 1;
+        ball.ySpd = 1;
+        // Kick off the loop.
+        setTimeout(function () {
+          int = setInterval(loop, 1);
+        }, 300);
+      }
+    };
+
+    // Set up game
+    let playing = false;
+    let int;
+    const p1Bat = setUpBat('p1Bat', 50);
+    const p2Bat = setUpBat('p2Bat', 390);
+    const p1Sc = document.getElementById('p1Score');
+    const p2Sc = document.getElementById('p2Score');
+    const ball = document.getElementById('ball');
+    const btn = document.getElementById('btn');
+    const scrW = 450;
+    const scrH = 300;
+    ball.width = 15;
+    // Call the event adder with the relevant key codes.
+    addEv(p2Bat, 76, 188);
+    addEv(p1Bat, 65, 90);
+  </script>
+</html>
