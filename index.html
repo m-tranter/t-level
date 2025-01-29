@@ -52,16 +52,16 @@
             </div>
           </div>
           <div class="row gy-3 gx-4">
-            <div class="col-md-6">
+            <div class="col-lg-6">
               <textarea
                 class="rounded display p-2 wheat mt-2 border border-dark"
-                cols="50"
+                cols="26"
                 rows="15"
                 v-model="input"
                 @input="reset"
               ></textarea>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-6">
               <button
                 :disabled="!input.length"
                 @click="process"
