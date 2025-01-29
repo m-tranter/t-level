@@ -28,12 +28,13 @@
       }
       .display {
         overflow: scroll;
-        height: 20rem;
-        min-width: 300px;
       }
       input {
         field-sizing: content;
         color: Black;
+      }
+      textarea {
+        resize: none;
       }
     </style>
   </head>
@@ -52,36 +53,37 @@
           </div>
           <div class="row gy-3 gx-4">
             <div class="col-md-6">
-              <div class="rounded display p-2 wheat mt-2 border border-dark">
-                <p class="mb-0" v-for="line in lines">{{line}}</p>
-              </div>
+              <textarea
+                class="rounded display p-2 wheat mt-2 border border-dark"
+                cols="50"
+                rows="15"
+                v-model="input"
+                @input="reset"
+              ></textarea>
             </div>
             <div class="col-md-6">
               <button
-                class="d-block btn btn-primary my-2"
-                :disabled="!lines.length"
-                type="button"
+                :disabled="!input.length"
                 @click="process"
+                class="d-block btn btn-primary my-2"
+                type="button"
               >
                 Process
               </button>
-              <label for="res">Result:</label>
-              <input
-                id="input"
-                class="rounded d-block border border-dark p-2"
-                disabled
-                v-model="result"
-                :class="{'bg-success text-white': indicate}"
-              />
-              <button
-                title="copy value"
-                type="button"
-                class="mt-2"
-                id="copy"
-                @click="copyRes"
-              >
-                <i class="fa fa-copy"></i>
-              </button>
+              <my-result
+                :copyres="copyres"
+                :flash="indicate1"
+                :state="part1"
+                indicator="indicate1"
+                label="Part one"
+              ></my-result>
+              <my-result
+                :copyres="copyres"
+                :flash="indicate2"
+                :state="part2"
+                indicator="indicate2"
+                label="Part two"
+              ></my-result>
             </div>
           </div>
         </div>
@@ -90,25 +92,82 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-      const { createApp } = Vue;
+      const myResult = {
+        props: ['copyres', 'flash', 'indicator', 'label', 'state'],
+        template: `
+          <div>
+            <label class="d-block mt-3" :for="state">{{label}}</label>
+            <input
+              :class="{'bg-success text-white': flash}"
+              :id="state"
+              class="rounded  border border-dark p-2"
+              disabled
+              v-model="state"
+            />
+            <button
+              @click="copyres(state, indicator)"
+              class="mt-2 ms-2"
+              type="button"
+            >
+              <i class="fa fa-copy"></i></button
+            >
+          </div>`,
+      };
+      const { createApp, defineModel, ref } = Vue;
       const app = createApp({
+        components: {
+          myResult,
+        },
         data() {
           return {
-            indicate: false,
+            indicate1: false,
+            indicate2: false,
             lines: [],
+            input: '',
             msg: '&nbsp;',
-            result: undefined,
+            part1: 0,
+            part2: 0,
+            numsRx: /(\d+)/g,
           };
         },
         methods: {
-          process: function () {
-            // Use reduce to calculate the result
-            this.result = 'Testing';
+          reset: function () {
+            this.part1 = 0;
+            this.part2 = 0;
           },
-          copyRes: function () {
-            navigator.clipboard.writeText(this.result);
-            this.indicate = true;
-            setTimeout(() => (this.indicate = false), 500);
+          process: function () {
+            this.lines = this.input.split(/\n/g);
+            this.partOne();
+            this.partTwo();
+          },
+          partOne: function () {
+            // As a test - sum of all numbers found
+            this.part1 = this.lines.reduce((accOuter, line) => {
+              let match = line.match(this.numsRx);
+              return !match
+                ? accOuter
+                : accOuter +
+                    match.reduce((accInner, num) => {
+                      return accInner + parseInt(num);
+                    }, 0);
+            }, 0);
+          },
+          partTwo: function () {
+            // As a test - product of all numbers found
+            this.part2 = this.lines.reduce((accOuter, line) => {
+              let match = line.match(this.numsRx);
+              return !match
+                ? accOuter
+                : accOuter *
+                    match.reduce((accInner, num) => {
+                      return accInner * parseInt(num);
+                    }, 1);
+            }, 1);
+          },
+          copyres: function (id, indicator) {
+            navigator.clipboard.writeText(this[id]);
+            this[indicator] = true;
+            setTimeout(() => (this[indicator] = false), 500);
           },
           readFile: function (e) {
             let file = e.target.files[0];
@@ -118,7 +177,8 @@
             this.msg = f.name;
             const reader = new FileReader();
             reader.onload = () => {
-              this.lines = reader.result.split('\n').filter((e) => e.length);
+              this.reset();
+              this.input = reader.result;
             };
             reader.readAsText(f);
           },
