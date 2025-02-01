@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <style>
+      /* This is a fiddle to get the boxes square! */
+      .row-cols-5 {
+        padding-left: 5vw;
+        padding-right: 5vw;
+      }
+      .box {
+        height: 18vw;
+      }
+      .dark-blue {
+        color: DarkBlue;
+      }
+    </style>
+    <title>Vue - components</title>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <div class="my-3 container">
+          <h1>Vue - components</h1>
+          <div class="mb-4">
+            <my-list :list="fruits"></my-list>
+            <my-list :list="trees"></my-list>
+          </div>
+          <p>Click box to change colour.</p>
+        </div>
+        <div class="container-fluid p-0 m-0">
+          <div class="row g-0 row-cols-5">
+            <div class="col" v-for="_ in 20">
+              <my-box :randomcol="randomcol"></my-box>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+      // Example of passing a function to a component.
+      const myBox = {
+        props: ['randomcol'],
+        template: `<div @click="this.$forceUpdate()" class="box"  :style="{backgroundColor: randomcol()}">&nbsp;</div>`,
+      };
+
+      // Setting the colour with object notation (better to use a class, really).
+      const myList = {
+        props: ['list'],
+        template: `
+        <div class="mt-3">
+          <h2>{{list.title}}</h2>
+          <ul>
+            <li v-for="item in list.items">
+              <span :class="list.textClass">{{item}}</span>
+            </li>
+          </ul>
+        </div>
+        `,
+      };
+
+      const { createApp } = Vue;
+      const app = createApp({
+        components: {
+          myList,
+          myBox,
+        },
+        data() {
+          return {
+            colRx: /#[0-9a-f]{6}/,
+            fruits: {
+              title: 'Fruits',
+              items: ['apple', 'orange', 'peach', 'pear'],
+              textClass: 'text-danger',
+            },
+            trees: {
+              title: 'Trees',
+              items: ['apple', 'horse chestnut', 'oak', 'sycamore', 'yew'],
+              textClass: 'dark-blue',
+            },
+          };
+        },
+        methods: {
+          // Methods go here
+          randomHex: function () {
+            return Math.floor(Math.random() * 16).toString(16);
+          },
+          randomcol: function () {
+            let col = `#${Array(6)
+              .fill()
+              .map((_) => this.randomHex())
+              .join('')}`;
+            // It's very good practice to write tests.
+            // This checks the colour is a valid RGB value.
+            console.assert(this.colRx.test(col), 'Malformed RGB colour');
+            return col;
+          },
+        },
+        mounted() {
+          console.log('App mounted');
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
