@@ -26,19 +26,20 @@
   </head>
   <body>
     <div id="app">
-      <div>
+      <div class="my-4">
         <div class="my-3 container">
           <h1>Vue - components</h1>
           <div class="mb-4">
+            <!-- Use snake case when using components -->
             <my-list :list="fruits"></my-list>
             <my-list :list="trees"></my-list>
           </div>
           <p>Click box to change colour.</p>
         </div>
-        <div class="container-fluid p-0 m-0">
+        <div class="mb-3 container-fluid p-0 m-0">
           <div class="row g-0 row-cols-5">
-            <div class="col" v-for="_ in 20">
-              <my-box :randomcol="randomcol"></my-box>
+            <div class="col" v-for="k in Object.keys(cells)" :key="k">
+              <my-box :id="k" :bg="cells[k]" :update="update"></my-box>
             </div>
           </div>
         </div>
@@ -47,10 +48,11 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
+      // Use camel case when declaring the component objects.
       // Example of passing a function to a component.
       const myBox = {
-        props: ['randomcol'],
-        template: `<div @click="this.$forceUpdate()" class="box"  :style="{backgroundColor: randomcol()}">&nbsp;</div>`,
+        props: ['id', 'bg', 'update'],
+        template: `<div @click="update(id)" class="box"  :style="{backgroundColor: bg}"></div>`,
       };
 
       // Setting the colour with object notation (better to use a class, really).
@@ -76,6 +78,7 @@
         },
         data() {
           return {
+            cells: {},
             colRx: /#[0-9a-f]{6}/,
             fruits: {
               title: 'Fruits',
@@ -91,10 +94,13 @@
         },
         methods: {
           // Methods go here
+          update: function (id) {
+            this.cells[id] = this.uniqueCol(this.cells);
+          },
           randomHex: function () {
             return Math.floor(Math.random() * 16).toString(16);
           },
-          randomcol: function () {
+          randomColour: function () {
             let col = `#${Array(6)
               .fill()
               .map((_) => this.randomHex())
@@ -104,9 +110,22 @@
             console.assert(this.colRx.test(col), 'Malformed RGB colour');
             return col;
           },
+          uniqueCol: function (obj) {
+            let colour = this.randomColour();
+            while (Object.values(obj).some((c) => c === colour)) {
+              colour = this.randomColour();
+            }
+            return colour;
+          },
         },
         mounted() {
-          console.log('App mounted');
+          // Set up cells
+          this.cells = Array(20)
+            .fill()
+            .reduce((acc, _, i) => {
+              acc[i] = this.uniqueCol(acc);
+              return acc;
+            }, {});
         },
       }).mount('#app');
     </script>
