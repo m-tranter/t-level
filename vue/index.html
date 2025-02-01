@@ -85,6 +85,7 @@
               items: ['apple', 'orange', 'peach', 'pear'],
               textClass: 'text-danger',
             },
+            people: [],
             trees: {
               title: 'Trees',
               items: ['apple', 'horse chestnut', 'oak', 'sycamore', 'yew'],
@@ -126,6 +127,14 @@
               acc[i] = this.uniqueCol(acc);
               return acc;
             }, {});
+
+          fetch('https://randomuser.me/api/?results=10')
+            .then((response) => {
+              return response.json();
+            })
+            .then((data) => {
+              this.people = data.results;
+            });
         },
       }).mount('#app');
     </script>
