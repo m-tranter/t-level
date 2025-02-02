@@ -10,7 +10,7 @@
       crossorigin="anonymous"
     />
     <style>
-      /* This is a fiddle to get the boxes square! */
+      /* This is to get the boxes square. */
       .row-cols-5 {
         padding-left: 5vw;
         padding-right: 5vw;
@@ -48,14 +48,17 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-      // Use camel case when declaring the component objects.
+      // Use camel case when declaring component objects.
+
       // Example of passing a function to a component.
+      // Renders a coloured square which changes colour when clicked.
       const myBox = {
         props: ['id', 'bg', 'update'],
         template: `<div @click="update(id)" class="box"  :style="{backgroundColor: bg}"></div>`,
       };
 
-      // Setting the colour with object notation (better to use a class, really).
+      // Renders a list (with a heading).
+      // Setting the colour with object notation.
       const myList = {
         props: ['list'],
         template: `
@@ -79,7 +82,7 @@
         data() {
           return {
             cells: {},
-            colRx: /#[0-9a-f]{6}/,
+            colRx: /#[0-9a-f]{6}/, // Matches Hex colours.
             fruits: {
               title: 'Fruits',
               items: ['apple', 'orange', 'peach', 'pear'],
@@ -94,14 +97,15 @@
           };
         },
         methods: {
-          // Methods go here
           update: function (id) {
             this.cells[id] = this.uniqueCol(this.cells);
           },
           randomHex: function () {
+            // Returns a random hex digit
             return Math.floor(Math.random() * 16).toString(16);
           },
           randomColour: function () {
+            // Returns a random hex colour
             let col = `#${Array(6)
               .fill()
               .map((_) => this.randomHex())
@@ -112,6 +116,7 @@
             return col;
           },
           uniqueCol: function (obj) {
+            // Returns a colour that is not currently in the object.
             let colour = this.randomColour();
             while (Object.values(obj).some((c) => c === colour)) {
               colour = this.randomColour();
@@ -127,7 +132,7 @@
               acc[i] = this.uniqueCol(acc);
               return acc;
             }, {});
-
+          // Get some data from an api
           fetch('https://randomuser.me/api/?results=10')
             .then((response) => {
               return response.json();
