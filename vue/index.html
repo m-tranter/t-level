@@ -10,136 +10,51 @@
       crossorigin="anonymous"
     />
     <style>
-      /* This is to get the boxes square. */
-      .row-cols-5 {
-        padding-left: 5vw;
-        padding-right: 5vw;
-      }
-      .box {
-        height: 18vw;
-      }
-      .dark-blue {
-        color: DarkBlue;
-      }
+      /* CSS */
     </style>
     <title>Vue - components</title>
   </head>
   <body>
-    <div id="app">
-      <div class="my-4">
-        <div class="my-3 container">
-          <h1>Vue - components</h1>
-          <div class="mb-4">
-            <!-- Use kebab case when using components -->
-            <my-list :list="fruits"></my-list>
-            <my-list :list="trees"></my-list>
-          </div>
-          <p>Click box to change colour.</p>
-        </div>
-        <div class="mb-3 container-fluid p-0 m-0">
-          <div class="row g-0 row-cols-5">
-            <div class="col" v-for="k in Object.keys(cells)" :key="k">
-              <my-box :id="k" :bg="cells[k]" :update="update"></my-box>
-            </div>
-          </div>
-        </div>
+    <div id="app" class="my-4">
+      <div class="container">
+        <h1>Vue components</h1>
+        <my-component :date="date"></my-component>
       </div>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-      // Use camel case when declaring component objects.
-
-      // Example of passing a function to a component.
-      // Renders a coloured square which changes colour when clicked.
-      const myBox = {
-        props: ['id', 'bg', 'update'],
-        template: `<div @click="update(id)" class="box"  :style="{backgroundColor: bg}"></div>`,
-      };
-
-      // Renders a list (with a heading).
-      // Setting the colour with object notation.
-      const myList = {
-        props: ['list'],
-        template: `
-        <div class="mt-3">
-          <h2>{{list.title}}</h2>
-          <ul>
-            <li v-for="item in list.items">
-              <span :class="list.textClass">{{item}}</span>
-            </li>
-          </ul>
-        </div>
-        `,
+      'use strict;';
+      const myComponent = {
+        props: ['date'],
+        template: `<p>{{date.toLocaleDateString('en-GB')}}</p>`,
       };
 
       const { createApp } = Vue;
       const app = createApp({
         components: {
-          myList,
-          myBox,
+          myComponent,
         },
         data() {
           return {
-            cells: {},
-            colRx: /#[0-9a-f]{6}/, // Matches Hex colours.
-            fruits: {
-              title: 'Fruits',
-              items: ['apple', 'orange', 'peach', 'pear'],
-              textClass: 'text-danger',
-            },
             people: [],
-            trees: {
-              title: 'Trees',
-              items: ['apple', 'horse chestnut', 'oak', 'sycamore', 'yew'],
-              textClass: 'dark-blue',
-            },
+            date: new Date(),
           };
         },
         methods: {
-          update: function (id) {
-            this.cells[id] = this.uniqueCol(this.cells);
-          },
-          randomHex: function () {
-            // Returns a random hex digit
-            return Math.floor(Math.random() * 16).toString(16);
-          },
-          randomColour: function () {
-            // Returns a random hex colour
-            let col = `#${Array(6)
-              .fill()
-              .map((_) => this.randomHex())
-              .join('')}`;
-            // It's very good practice to write tests.
-            // This checks the colour is a valid RGB value.
-            console.assert(this.colRx.test(col), 'Malformed RGB colour');
-            return col;
-          },
-          uniqueCol: function (obj) {
-            // Returns a colour that is not currently in the object.
-            let colour = this.randomColour();
-            while (Object.values(obj).some((c) => c === colour)) {
-              colour = this.randomColour();
-            }
-            return colour;
+          getPeople: function () {
+            // Get some data from an api
+            fetch('https://randomuser.me/api/?results=10')
+              .then((response) => {
+                return response.json();
+              })
+              .then((data) => {
+                this.people = data.results;
+              });
           },
         },
         mounted() {
-          // Set up cells
-          this.cells = Array(20)
-            .fill()
-            .reduce((acc, _, i) => {
-              acc[i] = this.uniqueCol(acc);
-              return acc;
-            }, {});
-          // Get some data from an api
-          fetch('https://randomuser.me/api/?results=10')
-            .then((response) => {
-              return response.json();
-            })
-            .then((data) => {
-              this.people = data.results;
-            });
+          this.getPeople();
         },
       }).mount('#app');
     </script>
