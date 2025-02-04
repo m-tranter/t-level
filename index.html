@@ -74,6 +74,7 @@
                 :copyres="copyres"
                 :flash="indicate1"
                 :state="part1"
+                data="part1"
                 indicator="indicate1"
                 label="Part one"
               ></my-result>
@@ -81,6 +82,7 @@
                 :copyres="copyres"
                 :flash="indicate2"
                 :state="part2"
+                data="part2"
                 indicator="indicate2"
                 label="Part two"
               ></my-result>
@@ -93,7 +95,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
       const myResult = {
-        props: ['copyres', 'flash', 'indicator', 'label', 'state'],
+        props: ['copyres', 'data', 'flash', 'indicator', 'label', 'state'],
         template: `
           <div>
             <label class="d-block mt-3" :for="state">{{label}}</label>
@@ -105,7 +107,7 @@
               v-model="state"
             />
             <button
-              @click="copyres(state, indicator)"
+              @click="copyres(data, indicator)"
               class="mt-2 ms-2"
               type="button"
             >
