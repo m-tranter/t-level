@@ -58,7 +58,7 @@
                 cols="26"
                 rows="15"
                 v-model="input"
-                @input="reset"
+                @focus="reset"
               ></textarea>
             </div>
             <div class="col-lg-6">
@@ -74,6 +74,7 @@
                 :copyres="copyres"
                 :flash="indicate1"
                 :state="part1"
+                :time="time1"
                 data="part1"
                 indicator="indicate1"
                 label="Part one"
@@ -82,6 +83,7 @@
                 :copyres="copyres"
                 :flash="indicate2"
                 :state="part2"
+                :time="time2"
                 data="part2"
                 indicator="indicate2"
                 label="Part two"
@@ -95,14 +97,22 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
       const myResult = {
-        props: ['copyres', 'data', 'flash', 'indicator', 'label', 'state'],
+        props: [
+          'copyres',
+          'flash',
+          'indicator',
+          'label',
+          'data',
+          'state',
+          'time',
+        ],
         template: `
           <div>
             <label class="d-block mt-3" :for="state">{{label}}</label>
             <input
               :class="{'bg-success text-white': flash}"
               :id="state"
-              class="rounded border border-dark p-2"
+              class="rounded  border border-dark p-2"
               disabled
               v-model="state"
             />
@@ -113,6 +123,9 @@
             >
               <i class="fa fa-copy"></i></button
             >
+            <p class="mt-2">
+              <span v-if="time !== null">Time: {{time}}ms</span><span v-else>&nbsp;</span>
+            </p>
           </div>`,
       };
       const { createApp } = Vue;
@@ -129,42 +142,42 @@
             msg: '&nbsp;',
             part1: 0,
             part2: 0,
+            time1: null,
+            time2: null,
             numsRx: /(\d+)/g,
           };
         },
         methods: {
           reset: function () {
+            this.time1 = null;
+            this.time2 = null;
             this.part1 = 0;
             this.part2 = 0;
           },
           process: function () {
             this.lines = this.input.split(/\n/g);
-            this.partOne();
-            this.partTwo();
+            let toDo = [
+              { fn: this.partOne, timer: 'time1', result: 'part1' },
+              { fn: this.partTwo, timer: 'time2', result: 'part2' },
+            ];
+            toDo.forEach((e) => {
+              let start = performance.now();
+              this[e.result] = e.fn(this.lines);
+              let end = performance.now();
+              this[e.timer] = end - start;
+            });
           },
-          partOne: function () {
-            // As a test - sum of all numbers found
-            this.part1 = this.lines.reduce((accOuter, line) => {
-              let match = line.match(this.numsRx);
-              return !match
-                ? accOuter
-                : accOuter +
-                    match.reduce((accInner, num) => {
-                      return accInner + parseInt(num);
-                    }, 0);
-            }, 0);
+          partOne: function (arr) {
+            console.log(arr);
+            return 1;
           },
-          partTwo: function () {
-            // As a test - product of all numbers found
-            this.part2 = this.lines.reduce((accOuter, line) => {
-              let match = line.match(this.numsRx);
-              return !match
-                ? accOuter
-                : accOuter *
-                    match.reduce((accInner, num) => {
-                      return accInner * parseInt(num);
-                    }, 1);
-            }, 1);
+          partTwo: function (arr) {
+            let i = 0;
+            while (i < 5000) {
+              console.log(i);
+              i += 1;
+            }
+            return 1;
           },
           copyres: function (id, indicator) {
             navigator.clipboard.writeText(this[id]);
