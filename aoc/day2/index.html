@@ -55,13 +55,13 @@
             <div class="col-lg-6">
               <textarea
                 class="rounded display p-2 wheat mt-2 border border-dark"
-                cols="26"
+                cols="50"
                 rows="15"
                 v-model="input"
-                @focus="reset"
+                @input="reset"
               ></textarea>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg -6">
               <button
                 :disabled="!input.length"
                 @click="process"
@@ -99,10 +99,10 @@
       const myResult = {
         props: [
           'copyres',
+          'data',
           'flash',
           'indicator',
           'label',
-          'data',
           'state',
           'time',
         ],
@@ -128,7 +128,7 @@
             </p>
           </div>`,
       };
-      const { createApp } = Vue;
+      const { createApp, defineModel, ref } = Vue;
       const app = createApp({
         components: {
           myResult,
@@ -137,7 +137,6 @@
           return {
             indicate1: false,
             indicate2: false,
-            lines: [],
             input: '',
             msg: '&nbsp;',
             part1: 0,
@@ -155,29 +154,51 @@
             this.part2 = 0;
           },
           process: function () {
-            this.lines = this.input.split(/\n/g);
+            // Make lines an array of arrays of numbers to start with
+            this.lines = this.arraysOfNums(this.input);
             let toDo = [
               { fn: this.partOne, timer: 'time1', result: 'part1' },
               { fn: this.partTwo, timer: 'time2', result: 'part2' },
             ];
             toDo.forEach((e) => {
               let start = performance.now();
-              this[e.result] = e.fn(this.lines);
+              this[e.result] = e.fn(this.input);
               let end = performance.now();
               this[e.timer] = end - start;
             });
           },
-          partOne: function (arr) {
-            console.log(arr);
-            return 1;
+          arraysOfNums: function (str) {
+            return str.split(/\n/).reduce((acc, l) => {
+              let match = l.match(this.numsRx);
+              return match ? [...acc, match.map((n) => parseInt(n))] : acc;
+            }, []);
           },
-          partTwo: function (arr) {
-            let i = 0;
-            while (i < 5000) {
-              console.log(i);
-              i += 1;
-            }
-            return 1;
+          isSafe: function (arr) {
+            let diff = arr.slice(0, arr.length - 1).reduce((acc, e, i) => {
+              return [...acc, arr[i + 1] - e];
+            }, []);
+            return diff.every((e) => e > 0 && e < 4) ||
+              diff.every((e) => e < 0 && e > -4)
+              ? 1
+              : 0;
+          },
+          partOne: function () {
+            return this.lines.reduce((acc, l) => {
+              return acc + this.isSafe(l);
+            }, 0);
+          },
+          partTwo: function () {
+            return this.lines.reduce((acc, l) => {
+              if (this.isSafe(l)) {
+                return acc + 1;
+              }
+              for (let i = 0; i < l.length; i++) {
+                if (this.isSafe(l.filter((_, j) => i !== j))) {
+                  return acc + 1;
+                }
+              }
+              return acc;
+            }, 0);
           },
           copyres: function (id, indicator) {
             navigator.clipboard.writeText(this[id]);

@@ -19,6 +19,25 @@
       <div class="container">
         <h1>Vue components</h1>
         <my-component :date="date"></my-component>
+        <div class="row g-2">
+          <div v-for="p in people" class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card">
+              <img
+                :src="p.picture.medium"
+                class="card-img-top"
+                :alt="p.name.last"
+              />
+              <div class="card-body">
+                <h5 class="card-title">{{p.fullName}}</h5>
+                <p class="card-text">
+                  Some quick example text to build on the card title and make up
+                  the bulk of the card's content.
+                </p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -50,6 +69,9 @@
               })
               .then((data) => {
                 this.people = data.results;
+                this.people.forEach((p) => {
+                  p.fullName = `${p.name.first} ${p.name.last}`;
+                });
               });
           },
         },
